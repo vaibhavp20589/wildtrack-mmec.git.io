@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Animal Tracking System</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script >const animals = [];
+
+        // Function to add a new animal
+        function addAnimal(name, species, location, coordinates, age) {
+            animals.push({ name, species, location, coordinates, age });
+        }
+        
+        // Function to update the location of an existing animal
+        function updateAnimalLocation(name, newLocation, newCoordinates) {
+            const animal = animals.find(animal => animal.name === name);
+            if (animal) {
+                animal.location = newLocation;
+                animal.coordinates = newCoordinates;
+            }
+        }
+        
+        // Helper function to group animals by a given key
+        function groupBy(array, key) {
+            return array.reduce((result, currentValue) => {
+                const keyValue = currentValue[key];
+                if (!result[keyValue]) {
+                    result[keyValue] = [];
+                }
+                result[keyValue].push(currentValue);
+                return result;
+            }, {});
+        }
+        
+        // Function to group animals by species and location
+        function groupAnimals() {
+            const groupedBySpecies = groupBy(animals, 'species');
+            for (const species in groupedBySpecies) {
+                groupedBySpecies[species] = groupBy(groupedBySpecies[species], 'location');
+            }
+            return groupedBySpecies;
+        }
+        
+        // Initialize the map
+        const map = L.map('map').setView([0, 0], 2);
+        
+        // Add a tile layer to the map
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Add animals to the tracking system
+        addAnimal("Leo", "Lion", "NA", [35.2248, -88.2492000], 5);
+        addAnimal("Simba", "Lion", "NA", [35.4, -88.2492000], 3);
+        addAnimal("Manny", "Elephant", "Forest", [10, 10], 10);
+        addAnimal("Dumbo", "Elephant", "Forest", [10, 9.805], 7);
+        addAnimal("Zara", "Zebra", "NA", [35.2248, -88.4], 4);
+        addAnimal("Stripe", "Zebra", "NA", [35.6248, -88.2492000], 6);
+        addAnimal("Elsa", "Elephant", "Forest", [10, 10.523], 4);
+        
+        // Update an animal's location
+        updateAnimalLocation("Simba", "Forest", [10, 10]);
+        addAnimal("Leo", "Lion", "Savannah", [0, 90], 0.5);
+        addAnimal("Simba", "Lion", "Savannah", [0, 90], 0.5);
+        addAnimal("Manny", "Elephant", "Forest", [10, 95], 0.5);
+        addAnimal("Dumbo", "Elephant", "Forest", [10, 90], 0.5);
+        addAnimal("Zara", "Zebra", "Savannah", [0, 90], 0.5);
+        addAnimal("Stripe", "Zebra", "Savannah", [0, 90], 0.5);
+        addAnimal("Elsa", "Lion", "Forest", [10, 90], 0.5);
+        
+        
+        
+        // Group animals and add them to the map
+        const groupedAnimals = groupAnimals();
+        
+        for (const species in groupedAnimals) {
+            for (const location in groupedAnimals[species]) {
+                const group = groupedAnimals[species][location];
+                group.forEach(animal => {
+                    L.marker(animal.coordinates)
+                        .bindPopup(`${animal.name} (${animal.species}), ${animal.location}`)
+                        .addTo(map);
+                });
+            }
+        }
+        
+        console.log(JSON.stringify(groupedAnimals, null, 2));
+        
+        
+        
+        </script>
+</body>
+
+</html>
